@@ -1,0 +1,64 @@
+<!-- templates/results.html -->
+{% extends "admin_layout.html" %}
+{% block title %}Results — Online Voting (Admin){% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Election Results</h2>
+      <div>
+        <a class="btn btn-outline-primary" href="{{ url_for('admin_export_csv') }}">Export CSV</a>
+        <a class="btn btn-secondary ms-2" href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Vote Totals</h5>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>Candidate</th><th class="text-end">Votes</th></tr>
+            </thead>
+            <tbody>
+              {% for c in candidates %}
+                <tr>
+                  <td>{{ c['name'] }}</td>
+                  <td class="text-end">{{ c['votes'] }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Individual Votes</h5>
+        {% if votes %}
+          <div class="table-responsive">
+            <table class="table table-sm mb-0">
+              <thead class="table-light">
+                <tr><th>#</th><th>User ID</th><th>Candidate</th></tr>
+              </thead>
+              <tbody>
+                {% for v in votes %}
+                  <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ v.user_id }}</td>
+                    <td>{{ v.candidate_name }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-muted small">No votes cast yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

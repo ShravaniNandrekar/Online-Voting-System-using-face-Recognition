@@ -1,0 +1,57 @@
+<!-- templates/vote.html -->
+{% extends "admin_layout.html" %}
+{% block title %}Vote — Online Voting{% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <div class="container" style="max-width:960px;">
+    <h2 class="mb-3">Vote — Welcome, <strong>{{ user_id }}</strong></h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ 'danger' if category=='danger' or category=='error' else 'success' }} py-2">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm p-3">
+      <form method="post" action="{{ url_for('cast_vote') }}">
+        <div class="row g-3">
+          {% for c in candidates %}
+            <div class="col-md-6">
+              <div class="d-flex align-items-center gap-3 p-3 border rounded">
+                {% if c['logo_path'] %}
+                  <img src="{{ url_for('static', filename=c['logo_path']) }}" alt="logo" style="width:72px;height:72px;object-fit:cover;border-radius:8px;">
+                {% else %}
+                  <div style="width:72px;height:72px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#888;">No Logo</div>
+                {% endif %}
+
+                <div class="flex-grow-1">
+                  <h5 class="mb-1">{{ c['name'] }}</h5>
+                  {% if c['bio'] %}
+                    <p class="mb-1 small text-muted">{{ c['bio'] }}</p>
+                  {% endif %}
+                  <small class="text-muted">Current votes: {{ c['votes'] }}</small>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="candidate_id" id="cand{{ c['id'] }}" value="{{ c['id'] }}">
+                  <label class="form-check-label" for="cand{{ c['id'] }}">Select</label>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+          <button class="btn btn-success" type="submit">Cast Vote</button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('logout') }}">Logout</a>
+        </div>
+
+        <p class="mt-3 text-muted small">Note: You can cast only one vote. After voting you'll see a confirmation.</p>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

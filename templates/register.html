@@ -1,0 +1,125 @@
+<!-- templates/register.html -->
+{% extends "admin_layout.html" %}
+{% block title %}Register — Online Voting{% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <div class="container" style="max-width:900px;">
+    <h2 class="mb-3">Register New Voter</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'danger' or category=='error' else 'success' }} alert-sm">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card p-3 shadow-sm">
+      <form method="post" enctype="multipart/form-data" id="registerForm">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Full name</label>
+            <input class="form-control" type="text" name="name" required />
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">User ID (unique)</label>
+            <input class="form-control" type="text" name="user_id" required />
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" name="password" required />
+          </div>
+        </div>
+
+        <hr/>
+
+        <h6 class="mt-3">Option A — Capture from webcam</h6>
+        <div class="row g-3 align-items-start">
+          <div class="col-md-6">
+            <video id="video" width="100%" autoplay style="border-radius:6px;border:1px solid #e9ecef;"></video>
+            <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-2">
+              <button type="button" id="startCamera" class="btn btn-secondary btn-sm">Start Camera</button>
+              <button type="button" id="captureBtn" class="btn btn-primary btn-sm">Capture Photo</button>
+              <button type="button" id="stopCamera" class="btn btn-warning btn-sm">Stop Camera</button>
+            </div>
+            <p class="text-muted small">After capture, submit the form to register. Captured image will be used for face verification.</p>
+            <input type="hidden" name="image_data" id="image_data" />
+          </div>
+        </div>
+
+        <hr/>
+
+        <h6 class="mt-3">Option B — Upload image file (PNG/JPG/JPEG)</h6>
+        <div class="mb-3">
+          <input class="form-control" type="file" name="image_file" accept="image/*" />
+        </div>
+
+        <div class="mt-3 d-flex gap-2">
+          <button class="btn btn-success" type="submit">Register</button>
+          <a class="btn btn-link" href="{{ url_for('index') }}">Cancel</a>
+        </div>
+      </form>
+
+      <p class="mt-3 text-muted small mb-0">
+        Tips: use a clear frontal face photo; remove hats/glasses and ensure even lighting.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const startCameraBtn = document.getElementById("startCamera");
+  const stopCameraBtn = document.getElementById("stopCamera");
+  const captureBtn = document.getElementById("captureBtn");
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const imageDataInput = document.getElementById("image_data");
+  let stream = null;
+
+  startCameraBtn.onclick = async () => {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      video.srcObject = stream;
+    } catch (err) {
+      alert("Cannot access camera: " + err);
+    }
+  };
+
+  stopCameraBtn.onclick = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+      stream = null;
+    }
+  };
+
+  captureBtn.onclick = () => {
+    if (!stream) { alert("Start the camera first."); return; }
+    const ctx = canvas.getContext("2d");
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/jpeg");
+    imageDataInput.value = dataUrl;
+    // friendly confirmation
+    const alertDiv = document.createElement("div");
+    alertDiv.className = "alert alert-success small mt-2";
+    alertDiv.innerText = "Image captured. Now submit the form to register.";
+    const parent = document.querySelector("#registerForm .card-body") || document.querySelector("#registerForm");
+    parent.appendChild(alertDiv);
+  };
+
+  // stop camera when leaving the page
+  window.addEventListener("beforeunload", () => {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,135 @@
+<!-- templates/login.html -->
+{% extends "admin_layout.html" %}
+{% block title %}Login — Online Voting{% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <div class="container" style="max-width:820px;">
+    <h2 class="mb-3">Voter Login</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'danger' or category=='error' else 'success' }} alert-sm">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if step == "login" or not step %}
+      <div class="card p-3 shadow-sm">
+        <form method="post" action="{{ url_for('login') }}">
+          <div class="mb-3">
+            <label class="form-label">User ID</label>
+            <input class="form-control" type="text" name="user_id" required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" name="password" required />
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Submit</button>
+            <a class="btn btn-link" href="{{ url_for('register') }}">Register</a>
+          </div>
+        </form>
+
+        <small class="text-muted d-block mt-3">
+          After correct credentials you'll be asked to verify your face with your webcam.
+        </small>
+      </div>
+
+    {% elif step == "verify" %}
+      <div class="card p-3 shadow-sm">
+        <h5 class="mb-2">Face Verification for <strong>{{ user_id }}</strong></h5>
+        <p class="text-muted small mb-3">Start your camera, position your face, then capture and click <em>Capture & Verify</em>.</p>
+
+        <div class="row">
+          <div class="col-md-7">
+            <video id="video" width="100%" height="320" autoplay style="border-radius:6px;border:1px solid #e9ecef;"></video>
+            <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+            <div class="mt-2">
+              <button id="startCamera" class="btn btn-secondary btn-sm">Start Camera</button>
+              <button id="captureBtn" class="btn btn-primary btn-sm">Capture & Verify</button>
+              <button id="stopCamera" class="btn btn-warning btn-sm">Stop Camera</button>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <div id="result" class="mt-2"></div>
+            <div class="mt-3 text-muted small">
+              Tip: sit in bright even light, face the camera directly. Avoid sunglasses or masks.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const startBtn = document.getElementById("startCamera");
+        const stopBtn = document.getElementById("stopCamera");
+        const captureBtn = document.getElementById("captureBtn");
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const resultDiv = document.getElementById("result");
+        let stream = null;
+
+        startBtn.onclick = async () => {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            video.srcObject = stream;
+          } catch (err) {
+            resultDiv.innerHTML = `<div class="alert alert-danger small">Cannot access camera: ${err}</div>`;
+          }
+        };
+
+        stopBtn.onclick = () => {
+          if (stream) {
+            stream.getTracks().forEach(t => t.stop());
+            video.srcObject = null;
+            stream = null;
+          }
+        };
+
+        captureBtn.onclick = async () => {
+          if (!stream) {
+            alert("Start the camera first.");
+            return;
+          }
+          const ctx = canvas.getContext("2d");
+          // draw scaled image to canvas; use video dimensions for good resolution
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 480;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg");
+          resultDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"></div> Verifying...';
+
+          try {
+            const resp = await fetch("{{ url_for('verify_face') }}", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ image_data: dataUrl })
+            });
+            const json = await resp.json();
+            if (json.matched) {
+              resultDiv.innerHTML = `<div class="alert alert-success small">${json.message}</div>
+                                     <a class="btn btn-sm btn-primary" href="{{ url_for('vote') }}">Go to voting page</a>`;
+            } else {
+              resultDiv.innerHTML = `<div class="alert alert-danger small">${json.message}</div>`;
+            }
+          } catch (err) {
+            resultDiv.innerHTML = `<div class="alert alert-danger small">Verification request failed: ${err}</div>`;
+          }
+        };
+
+        // stop camera when the user navigates away
+        window.addEventListener("beforeunload", () => {
+          if (stream) stream.getTracks().forEach(t => t.stop());
+        });
+      </script>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "admin_layout.html" %}
+{% block title %}Manage Candidates{% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <div class="container">
+    <h2 class="mb-3">Manage Candidates</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ 'danger' if category=='danger' else 'success' }} py-2">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Add Candidate -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Add Candidate</h5>
+        <form method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Name</label>
+            <input class="form-control" type="text" name="name" required />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Position</label>
+            <select class="form-select" name="position_id">
+              <option value="">-- Select position (optional) --</option>
+              {% for p in positions %}
+                <option value="{{ p['id'] }}">{{ p['name'] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Logo / Icon</label>
+            <input class="form-control" type="file" name="logo" accept="image/*" />
+          </div>
+
+          <div class="col-md-12">
+            <label class="form-label">Bio / Agenda</label>
+            <textarea class="form-control" name="bio" rows="3" placeholder="Short bio or agenda (optional)"></textarea>
+          </div>
+
+          <div class="col-12">
+            <button class="btn btn-primary" type="submit">Add Candidate</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Existing Candidates -->
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Existing Candidates</h5>
+
+        {% if candidates %}
+          <div class="row gy-4">
+            {% for c in candidates %}
+              <div class="col-md-6">
+                <div class="d-flex align-items-start gap-3 p-3 border rounded bg-light h-100">
+                  {% if c['logo_path'] %}
+                    <img src="{{ url_for('static', filename=c['logo_path']) }}" class="logo-thumb" alt="Logo">
+                  {% else %}
+                    <div class="logo-thumb bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center text-muted small">
+                      No Logo
+                    </div>
+                  {% endif %}
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1">{{ c['name'] }}</h6>
+                    <small class="text-muted d-block">{{ pos_map.get(c['position_id']) if pos_map.get(c['position_id']) else 'Unassigned' }}</small>
+                    {% if c['bio'] %}
+                      <p class="mb-1 small text-muted">{{ c['bio'] }}</p>
+                    {% endif %}
+                    <div><small class="fw-semibold">Votes:</small> {{ c['votes'] }}</div>
+                  </div>
+                  <div class="text-end d-flex flex-column justify-content-start">
+                    <form method="post" action="{{ url_for('admin_candidate_delete', candidate_id=c['id']) }}" onsubmit="return confirm('Delete candidate and all their votes?');">
+                      <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-muted small">No candidates added yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

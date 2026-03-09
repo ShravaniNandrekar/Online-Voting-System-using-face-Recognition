@@ -1,0 +1,78 @@
+{% extends "admin_layout.html" %}
+{% block title %}Home — Online Voting{% endblock %}
+
+{% block content %}
+<style>
+  .hero-section {
+    background: linear-gradient(135deg, #004aad, #0077ff);
+    color: white;
+    border-radius: 1rem;
+    padding: 4rem 2rem;
+  }
+
+  .hero-section h1 {
+    font-weight: 700;
+  }
+
+  .btn-custom {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .info-card {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  .footer-note {
+    font-size: 0.9rem;
+  }
+</style>
+
+<div class="container py-5">
+  <div class="hero-section text-center mb-5">
+    <h1 class="display-4 mb-3">Online Voting System — Face Recognition</h1>
+    <p class="lead mb-4">
+      Experience secure and seamless voting with facial authentication.  
+      Register, verify, and cast your vote — all from your browser.
+    </p>
+    <div class="d-flex justify-content-center flex-wrap gap-3">
+      <a class="btn btn-light btn-lg btn-custom" href="{{ url_for('login') }}">
+        <i class="bi bi-person-check"></i> Voter Login
+      </a>
+      <a class="btn btn-outline-light btn-lg btn-custom" href="{{ url_for('register') }}">
+        <i class="bi bi-person-plus"></i> Register
+      </a>
+      <a class="btn btn-dark btn-lg btn-custom" href="{{ url_for('admin_login') }}">
+        <i class="bi bi-shield-lock"></i> Admin Login
+      </a>
+    </div>
+    <p class="mt-4 text-light-50 small">
+      <!-- After logging out, you will return to this page. For best results, use a clear frontal image during registration. -->
+    </p>
+  </div>
+
+  <div class="row align-items-center">
+    <div class="col-lg-6">
+      <div class="info-card card border-0 shadow-sm">
+        <img src="{{ url_for('static', filename='img/hero-vote.jpg') }}" 
+             class="card-img-top rounded-top" 
+             alt="Voting illustration"
+             onerror="this.style.display='none'">
+      </div>
+    </div>
+  </div>
+
+  <!--<div class="text-center text-muted footer-note mt-5">
+    Built by <strong>11planets Innovation and Solutions</strong>
+  </div>-->
+</div>
+{% endblock %}

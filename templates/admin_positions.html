@@ -1,0 +1,47 @@
+{% extends "admin_layout.html" %}
+{% block title %}Manage Positions{% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <div class="container">
+    <h2 class="mb-3">Manage Positions</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ 'danger' if category=='danger' or category=='error' else 'success' }} py-2">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" class="row g-2 mb-4">
+      <div class="col-md-8">
+        <input type="text" name="name" class="form-control" placeholder="New position name (e.g., President)" required />
+      </div>
+      <div class="col-md-4">
+        <button class="btn btn-success w-100" type="submit">Add Position</button>
+      </div>
+    </form>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Existing Positions</h5>
+        {% if positions %}
+          <ul class="list-group list-group-flush">
+            {% for p in positions %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>{{ p['name'] }}</span>
+                <span class="badge bg-secondary">{{ p['id'] }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="text-muted small">No positions defined yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
