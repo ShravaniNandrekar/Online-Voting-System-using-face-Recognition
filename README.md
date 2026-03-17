@@ -7,10 +7,15 @@ This project is a secure online voting system that uses face recognition technol
 🚀 Features
 
 🔐 User authentication using User ID & Password
+
 👤 Face Recognition Verification for secure login
+
 🗳️ One user can vote only once
+
 📊 Admin panel to manage candidates and positions
+
 📁 Export voting results in CSV format
+
 🖼️ Image upload & webcam capture for face registration
 
 🛠️ Tech Stack
